@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 import os
+import traceback
 
 # Enable all intents
 intents = discord.Intents.all()
@@ -169,26 +170,37 @@ rules = [
 
 # Embed for Strike Messages
 def strike_embed(user, rule_number, degree, punishment_length=None):
-    rule = next((r for r in rules if r["number"] == rule_number), None)
-    if not rule:
+    try:
+        rule_number = int(rule_number)  # Ensure rule_number is an integer
+        degree = int(degree)  # Ensure degree is an integer
+
+        rule = next((r for r in rules if r["number"] == rule_number), None)
+        if not rule:
+            return None
+
+        if degree < 1 or degree > len(rule["punishments"]):
+            raise ValueError("Degree is out of range for the rule's punishments.")
+
+        embed = discord.Embed(
+            title=f"Strike Issued to {user}",
+            description=(
+                f"**Rule {rule_number}: {rule['title']}**\n"
+                f"{rule['description']}\n\n"
+                f"**Degree:** {degree}\n"
+                f"**Punishment:** {rule['punishments'][degree - 1]}"
+            ),
+            color=discord.Color.orange()
+        )
+
+        if punishment_length:
+            embed.add_field(name="Custom Punishment Length", value=f"{punishment_length}", inline=False)
+
+        embed.set_footer(text="Issued by moderation team.")
+        return embed
+
+    except ValueError as e:
+        print(f"Error in strike_embed: {e}")
         return None
-
-    embed = discord.Embed(
-        title=f"Strike Issued to {user}",
-        description=(
-            f"**Rule {rule_number}: {rule['title']}**\n"
-            f"{rule['description']}\n\n"
-            f"**Degree:** {degree}\n"
-            f"**Punishment:** {rule['punishments'][degree - 1]}"
-        ),
-        color=discord.Color.orange()
-    )
-
-    if punishment_length:
-        embed.add_field(name="Custom Punishment Length", value=f"{punishment_length}", inline=False)
-
-    embed.set_footer(text="Issued by moderation team.")
-    return embed
 
 @bot.event
 async def on_ready():
@@ -202,11 +214,20 @@ async def rules(ctx):
 
 @bot.command()
 async def strike(ctx, user: str, rule_number: int, degree: int, punishment_length: str = None):
-    embed = strike_embed(user, rule_number, degree, punishment_length)
-    if embed:
-        await ctx.send(embed=embed)
-    else:
-        await ctx.send(f"Rule {rule_number} not found. Please check the rule number and try again.")
+    try:
+        embed = strike_embed(user, rule_number, degree, punishment_length)
+        if embed:
+            await ctx.send(embed=embed)
+        else:
+            await ctx.send(f"Rule {rule_number} not found or invalid degree. Please check the inputs.")
+    except Exception as e:
+        print(f"Error in strike command: {e}")
+        await ctx.send("An error occurred while processing the strike command.")
+
+@bot.event
+async def on_command_error(ctx, error):
+    await ctx.send("An error occurred while executing the command.")
+    print("".join(traceback.format_exception(None, error, error.__traceback__)))
 
 # Start the bot using the token from environment variables
 bot.run(os.getenv('DISCORD_BOT_TOKEN'))
