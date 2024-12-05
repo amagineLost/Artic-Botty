@@ -2,8 +2,8 @@ import discord
 from discord.ext import commands
 import os
 
-intents = discord.Intents.default()
-intents.messages = True
+# Enable all intents
+intents = discord.Intents.all()
 bot = commands.Bot(command_prefix=os.getenv("BOT_PREFIX", "/"), intents=intents)
 
 # Example Embed for Rule 1
