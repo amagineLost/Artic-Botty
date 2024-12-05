@@ -171,6 +171,7 @@ rules = [
 # Embed for Strike Messages
 def strike_embed(user, rule_number, degree, punishment_length=None):
     try:
+        print(f"Processing strike embed for user={user}, rule_number={rule_number}, degree={degree}, punishment_length={punishment_length}")
         rule = next((r for r in rules if r["number"] == rule_number), None)
         if not rule:
             raise ValueError(f"Rule {rule_number} not found.")
@@ -196,7 +197,10 @@ def strike_embed(user, rule_number, degree, punishment_length=None):
         return embed
 
     except ValueError as e:
-        print(f"Error in strike_embed: {e}")
+        print(f"ValueError in strike_embed: {e}")
+        return None
+    except Exception as e:
+        print(f"Unexpected error in strike_embed: {e}")
         return None
 
 @bot.event
@@ -205,6 +209,7 @@ async def on_ready():
 
 @bot.command()
 async def rules(ctx):
+    print("Rules command invoked.")
     for rule in rules:
         embed = rule_embed(rule["number"], rule["title"], rule["description"], rule["punishments"])
         await ctx.send(embed=embed)
@@ -212,6 +217,7 @@ async def rules(ctx):
 @bot.command()
 async def strike(ctx, user: str, rule_number: int, degree: int, punishment_length: str = None):
     try:
+        print(f"Strike command invoked: user={user}, rule_number={rule_number}, degree={degree}, punishment_length={punishment_length}")
         embed = strike_embed(user, rule_number, degree, punishment_length)
         if embed:
             await ctx.send(embed=embed)
