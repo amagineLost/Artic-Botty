@@ -172,13 +172,18 @@ rules = [
 def strike_embed(user, rule_number, degree, punishment_length=None):
     try:
         print(f"Processing strike embed for user={user}, rule_number={rule_number}, degree={degree}, punishment_length={punishment_length}")
+        print(f"Rules available: {[r['number'] for r in rules]}")  # Debug rule numbers
+
+        # Find the rule by number
         rule = next((r for r in rules if r["number"] == rule_number), None)
         if not rule:
             raise ValueError(f"Rule {rule_number} not found.")
-        
-        if degree < 1 or degree > len(rule["punishments"]):
-            raise ValueError("Degree is out of range for the rule's punishments.")
 
+        # Validate degree
+        if degree < 1 or degree > len(rule["punishments"]):
+            raise ValueError(f"Degree {degree} is out of range for rule {rule_number} with available degrees: {len(rule['punishments'])}")
+
+        # Build the embed
         embed = discord.Embed(
             title=f"Strike Issued to {user}",
             description=(
@@ -190,6 +195,7 @@ def strike_embed(user, rule_number, degree, punishment_length=None):
             color=discord.Color.orange()
         )
 
+        # Add optional punishment length
         if punishment_length:
             embed.add_field(name="Custom Punishment Length", value=f"{punishment_length}", inline=False)
 
