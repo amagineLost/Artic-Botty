@@ -1,5 +1,6 @@
 import discord
-from discord.ext import commands, menus
+from discord.ext import commands
+from discord.ext.menus import ListPageSource, MenuPages
 import os
 import traceback
 
@@ -177,7 +178,7 @@ def strike_embed(user, rule_number, degree, punishment_length=None):
         return None
 
 # Pagination for Rules
-class RuleMenu(menus.ListPageSource):
+class RuleMenu(ListPageSource):
     def __init__(self, data):
         super().__init__(data, per_page=1)
 
@@ -194,7 +195,7 @@ async def on_ready():
 async def rules(ctx, rule_number: int = None):
     if rule_number is None:
         # Paginated menu for all rules
-        pages = menus.MenuPages(source=RuleMenu(rules), clear_reactions_after=True)
+        pages = MenuPages(source=RuleMenu(rules), clear_reactions_after=True)
         await pages.start(ctx)
     else:
         # Display specific rule
