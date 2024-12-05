@@ -1,5 +1,5 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, menus
 import os
 import traceback
 
@@ -7,27 +7,13 @@ import traceback
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix=os.getenv("BOT_PREFIX", "/"), intents=intents)
 
-# Example Embed for Rule 1
-def rule_embed(rule_number, rule_title, rule_description, punishments):
-    embed = discord.Embed(
-        title=f"Rule {rule_number}: {rule_title}",
-        description=rule_description,
-        color=discord.Color.red()
-    )
-
-    embed.add_field(name="Punishments", value="\n".join([f"{i+1}. {p}" for i, p in enumerate(punishments)]), inline=False)
-    embed.set_footer(text="Please follow the rules to maintain a friendly community.")
-    return embed
-
 # Rule Data
 rules = [
     {
         "number": 1,
         "title": "Discrimination, Racism, or Hate Crime Towards Anyone",
         "description": (
-            "Any Discrimination, Racism, or Hate Crimes towards anyone is a potential usage of hatred "
-            "performed by the following user that has attacked another. It is requested to follow along "
-            "the punishments and give them rightfully fairness of punishment."
+            "Any discrimination, racism, or hate crimes towards anyone is unacceptable and will result in disciplinary actions."
         ),
         "punishments": ["Ban (1 day)", "Ban (7 days)", "Ban (30 days)"]
     },
@@ -35,8 +21,7 @@ rules = [
         "number": 2,
         "title": "Aggression Towards a HR",
         "description": (
-            "Aggression towards High Ranks is seen as an unacceptable and deemed as disrespectful "
-            "towards the High Rank user."
+            "Aggression towards High Ranks is deemed disrespectful and unacceptable behavior."
         ),
         "punishments": ["Warn", "Arrest (10 minutes)", "Arrest (25 minutes)"]
     },
@@ -44,10 +29,7 @@ rules = [
         "number": 3,
         "title": "Ranker+ Ranking Others into Incorrect Ranks",
         "description": (
-            "It is potentially possible to spot a Ranker or higher attempting to rank themselves or others "
-            "into incorrect ranks. If someone is attempting to rank another player to a rank that is incorrect, "
-            "such as 'The Queen' role, simply give them the receiving punishments necessary. Try to identify "
-            "them in-game despite their presence not being seen in-game."
+            "It is possible to spot a Ranker or higher ranking others incorrectly. For example, giving someone an unearned role such as 'The Queen'."
         ),
         "punishments": ["Ban (1 day)", "Demote & Ban (30 days)"]
     },
@@ -55,10 +37,7 @@ rules = [
         "number": 4,
         "title": "Bullying or Mistreatment Towards Another Worker",
         "description": (
-            "If a worker is caught disrespecting, bullying, or causing a scene between another user by being "
-            "aggressive, it is requested to view the chat logs before attempting to resolve the situation. "
-            "Afterwards, try to give them advice to solve and fix the issue. If continued, it results in the "
-            "following punishments."
+            "Disrespecting, bullying, or causing conflicts with other workers is not tolerated. Review chat logs before taking action."
         ),
         "punishments": ["Warn", "Arrest (20 minutes)"]
     },
@@ -66,8 +45,7 @@ rules = [
         "number": 5,
         "title": "Trainer+ Refusing to Train",
         "description": (
-            "This applies only if Trainers are caught avoiding the training entirely for an unreasonable "
-            "circumstance. For example, avoiding training recruits because they are 'tired' is an unacceptable act."
+            "Trainers must not avoid training duties without a valid reason. Avoidance due to being 'tired' is not acceptable."
         ),
         "punishments": ["Warn", "Arrest (20 minutes)", "Ban (1 day)"]
     },
@@ -75,10 +53,7 @@ rules = [
         "number": 6,
         "title": "Baristas Serving the Wrong Drink",
         "description": (
-            "Baristas are in charge of serving the Queen and workers around the map drinks to replunge "
-            "their necessity bars. However, it is unacceptable to give the workers+ the wrong drink. "
-            "It is not by any means allowed and will result in fair punishment. Baristas may refuse to "
-            "give service if the worker is breaking the rules."
+            "Baristas must serve the correct drinks to workers and other players. Misconduct will result in punishments."
         ),
         "punishments": ["Warn", "Arrest (5 minutes)"]
     },
@@ -86,10 +61,7 @@ rules = [
         "number": 7,
         "title": "Refusal to Work",
         "description": (
-            "Workers are required to be at their station at all times to avoid receiving punishment. "
-            "However, you must do an XP check on them to see if it's under 20 minutes by simply doing "
-            "-xpcheck (username) 60'. If they're under the required amount, you may proceed with action. "
-            "However, if they're above or at least at 20 minutes, you may give them free time for a few minutes."
+            "Workers must be at their stations unless given permission for a break. Use `-xpcheck` to verify their activity."
         ),
         "punishments": ["Warn", "Arrest (15 minutes)", "Arrest (30 minutes)"]
     },
@@ -97,9 +69,7 @@ rules = [
         "number": 8,
         "title": "Player Getting XP Through Hiding",
         "description": (
-            "Players are required to be visible at their station and not gaining XP by achieving this way of "
-            "hiding behind objects to go AFK or potentially just avoiding in general. Players should be at "
-            "all cost active and visible to the direct eyes of moderation."
+            "Players must remain visible at their stations. Earning XP while hiding or being AFK is prohibited."
         ),
         "punishments": ["Arrest (10 minutes)", "Arrest (20 minutes)", "Arrest (30 minutes)"]
     },
@@ -107,11 +77,7 @@ rules = [
         "number": 9,
         "title": "Working Incorrectly (Low Rank)",
         "description": (
-            "Lower ranks are the newest workers and have less experience behind the stations, they're "
-            "expected to have more mishaps than usual. Therefore the level of punishment is less severe "
-            "than average. The issue only applies if the worker is making varieties of mistakes within the job. "
-            "Please remember that if the player is under 10% marked for percentage complete within the rank "
-            "they'll be expected to make mistakes."
+            "Lower ranks are expected to make occasional mistakes due to inexperience. However, repeated errors will result in action."
         ),
         "punishments": ["Warn", "Arrest (15 minutes)"]
     },
@@ -119,9 +85,7 @@ rules = [
         "number": 10,
         "title": "Working Incorrectly (Mid Rank)",
         "description": (
-            "Mid ranks should understand more of the basics of how to work by now, so the punishments "
-            "will be more severe than previously. This issue only will apply if the worker is making "
-            "varieties of mistakes within the job."
+            "Mid ranks are expected to understand their roles. Frequent mistakes at this level will result in stricter actions."
         ),
         "punishments": ["Warn", "Arrest (20 minutes)", "Set Rank To (Security)"]
     },
@@ -129,8 +93,7 @@ rules = [
         "number": 12,
         "title": "Using Emotes to Hide From High Ranks",
         "description": (
-            "A worker may use our emotes and etc. At a desk however, using this to avoid being caught "
-            "may result in punishment."
+            "Using emotes or similar actions to avoid detection by High Ranks is prohibited."
         ),
         "punishments": ["Warn", "Arrest (5 minutes)", "Arrest (10 minutes)", "Arrest (15 minutes)"]
     },
@@ -138,9 +101,7 @@ rules = [
         "number": 13,
         "title": "Misusing the Call System",
         "description": (
-            "If a user is misusing the call system it is required to hold out available evidence to prove "
-            "that it was misused. For example, failure to provide following evidence of the situation will "
-            "hold you accountable for your action."
+            "Players must not misuse the call system. Always provide evidence of misuse before taking action."
         ),
         "punishments": ["Warn", "Arrest (15 minutes)", "Arrest (30 minutes)"]
     },
@@ -148,11 +109,7 @@ rules = [
         "number": 14,
         "title": "Working Incorrectly (Upper Rank)",
         "description": (
-            "Upper ranks have basically mastered the game at working, this shouldn't be a frequent issue "
-            "for them to occur. This issue only applies if the worker is making a variety of mistakes "
-            "within the job. Please remember if they're under 10% they are likely to still have reoccurring "
-            "sometimes frequent issues so take into accountability and consideration that they're still "
-            "processing and learning."
+            "Upper ranks should have mastered their roles. Frequent mistakes at this level will be addressed with severe action."
         ),
         "punishments": ["Warn", "Arrest (30 minutes)", "Set Rank To (Advisor)"]
     },
@@ -160,29 +117,39 @@ rules = [
         "number": 15,
         "title": "Managers Not Doing Their Job On Duty",
         "description": (
-            "If any manager is being lazy to manage the department they were given that is representing you, "
-            "you may take action. The rulebook states that Managers must promote good practice within their "
-            "designated department that they are representing and suggest changes."
+            "Managers must actively manage their departments and promote good practices. Laziness is not acceptable."
         ),
         "punishments": ["Arrest (15 minutes)", "Arrest (20 minutes)", "Arrest (30 minutes)"]
     }
 ]
 
+# Embed for a Rule
+def rule_embed(rule_number, rule_title, rule_description, punishments):
+    embed = discord.Embed(
+        title=f"Rule {rule_number}: {rule_title}",
+        description=rule_description,
+        color=discord.Color.red()
+    )
+    embed.add_field(
+        name="Punishments",
+        value="\n".join([f"{i+1}. {p}" for i, p in enumerate(punishments)]),
+        inline=False
+    )
+    embed.set_footer(text="Please follow the rules to maintain a friendly community.")
+    return embed
+
 # Embed for Strike Messages
 def strike_embed(user, rule_number, degree, punishment_length=None):
     try:
-        print(f"Processing strike embed for user={user}, rule_number={rule_number}, degree={degree}, punishment_length={punishment_length}")
-        print(f"Rules available: {[r['number'] for r in rules]}")  # Debug rule numbers
-
         # Find the rule by number
         rule = next((r for r in rules if r["number"] == rule_number), None)
         if not rule:
             raise ValueError(f"Rule {rule_number} not found.")
-
+        
         # Validate degree
         if degree < 1 or degree > len(rule["punishments"]):
-            raise ValueError(f"Degree {degree} is out of range for rule {rule_number} with available degrees: {len(rule['punishments'])}")
-
+            raise ValueError(f"Degree {degree} is out of range for rule {rule_number}.")
+        
         # Build the embed
         embed = discord.Embed(
             title=f"Strike Issued to {user}",
@@ -209,21 +176,40 @@ def strike_embed(user, rule_number, degree, punishment_length=None):
         print(f"Unexpected error in strike_embed: {e}")
         return None
 
+# Pagination for Rules
+class RuleMenu(menus.ListPageSource):
+    def __init__(self, data):
+        super().__init__(data, per_page=1)
+
+    async def format_page(self, menu, rule):
+        return rule_embed(rule["number"], rule["title"], rule["description"], rule["punishments"])
+
+# Event: Bot Ready
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user}")
 
+# Command: Display All Rules with Pagination
 @bot.command()
-async def rules(ctx):
-    print("Rules command invoked.")
-    for rule in rules:
-        embed = rule_embed(rule["number"], rule["title"], rule["description"], rule["punishments"])
-        await ctx.send(embed=embed)
+async def rules(ctx, rule_number: int = None):
+    if rule_number is None:
+        # Paginated menu for all rules
+        pages = menus.MenuPages(source=RuleMenu(rules), clear_reactions_after=True)
+        await pages.start(ctx)
+    else:
+        # Display specific rule
+        rule = next((r for r in rules if r["number"] == rule_number), None)
+        if rule:
+            embed = rule_embed(rule["number"], rule["title"], rule["description"], rule["punishments"])
+            await ctx.send(embed=embed)
+        else:
+            await ctx.send(f"Rule {rule_number} not found.")
 
+# Command: Strike a User
 @bot.command()
+@commands.has_permissions(manage_messages=True)
 async def strike(ctx, user: str, rule_number: int, degree: int, punishment_length: str = None):
     try:
-        print(f"Strike command invoked: user={user}, rule_number={rule_number}, degree={degree}, punishment_length={punishment_length}")
         embed = strike_embed(user, rule_number, degree, punishment_length)
         if embed:
             await ctx.send(embed=embed)
@@ -233,10 +219,18 @@ async def strike(ctx, user: str, rule_number: int, degree: int, punishment_lengt
         print(f"Error in strike command: {e}")
         await ctx.send("An error occurred while processing the strike command.")
 
+# Event: Error Handling
 @bot.event
 async def on_command_error(ctx, error):
-    await ctx.send("An error occurred while executing the command.")
-    print("".join(traceback.format_exception(None, error, error.__traceback__)))
+    if isinstance(error, commands.MissingRequiredArgument):
+        await ctx.send("A required argument is missing. Please check the command usage.")
+    elif isinstance(error, commands.MissingPermissions):
+        await ctx.send("You do not have the required permissions to execute this command.")
+    elif isinstance(error, commands.CommandNotFound):
+        await ctx.send("Invalid command. Use `/help` for a list of available commands.")
+    else:
+        await ctx.send("An unexpected error occurred.")
+        print("".join(traceback.format_exception(None, error, error.__traceback__)))
 
 # Start the bot using the token from environment variables
 bot.run(os.getenv('DISCORD_BOT_TOKEN'))
