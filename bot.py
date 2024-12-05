@@ -171,13 +171,10 @@ rules = [
 # Embed for Strike Messages
 def strike_embed(user, rule_number, degree, punishment_length=None):
     try:
-        rule_number = int(rule_number)  # Ensure rule_number is an integer
-        degree = int(degree)  # Ensure degree is an integer
-
         rule = next((r for r in rules if r["number"] == rule_number), None)
         if not rule:
-            return None
-
+            raise ValueError(f"Rule {rule_number} not found.")
+        
         if degree < 1 or degree > len(rule["punishments"]):
             raise ValueError("Degree is out of range for the rule's punishments.")
 
